@@ -1,11 +1,4 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Grossary-shop-react is a full-stack grocery shop application built using React, TypeScript, and Node.js. The project includes features such as product listing, shopping cart functionality, user authentication, and backend API for managing data. It is designed to provide a clean and responsive user experience with scalable architecture.
 to run the project: npm run dev
 npm install react-router-dom@6.4
 type rafce to get a react format in the new page
