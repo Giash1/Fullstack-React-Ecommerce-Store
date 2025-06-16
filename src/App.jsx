@@ -13,7 +13,7 @@ import HomePage from './pages/HomePage';
 import ProductPage from './pages/productPage';
 import ProductsListPage from './pages/ProductsListPage';
 import Layout from './pages/Layout';
-
+//add new components
 // an array of route objects.
 // React Router uses this array to build a routing map.
 const routes = [{
