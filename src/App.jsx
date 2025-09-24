@@ -1,54 +1,86 @@
 
-//  importing React Router functions to set up  client-side routing.
-// The router create and then pass into <RouterProvider />.
-import {
-  // Creates a router that uses the browser's History API.
-  createBrowserRouter, 
-  //  Makes the router available throughout app (like a context provider)
-  RouterProvider,
-} from 'react-router-dom';
-import './App.css'
-import AboutPage from './pages/AboutPage';
-import HomePage from './pages/HomePage';
-import ProductPage from './pages/productPage';
-import ProductsListPage from './pages/ProductsListPage';
-import Layout from './pages/Layout';
-//add new components
-// an array of route objects.
-// React Router uses this array to build a routing map.
-const routes = [{
-  path: '/',
-  element: <Layout />,
-  children: [{
-    path: '/',
-    element:<HomePage/>
-  },
-  {
-    path: '/about',
-    element:<AboutPage/>
-    },
-    {
-      path: '/product',
-      element:<ProductPage/>
-    },
-    {
-      path: '/products',
-      element:<ProductsListPage/>
-    }
-  ]
- 
-}]
-// convert the route array into a real router object that React Router can understand and
-//  then pass it to the main App component below
-const router = createBrowserRouter(routes);
-function App() {
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
 
+// Import pages
+import Layout from './pages/Layout';
+import HomePage from './pages/HomePage';
+import ProductsListPage from './pages/ProductsListPage';
+import ProductPage from './pages/ProductPage';
+import AboutPage from './pages/AboutPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
+import NotFoundPage from './pages/NotFoundPage';
+
+// Import components
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function App() {
   return (
-    // <Component propName={value} />
-    // Activates the router inside the app
-// Makes routing information (like current URL, navigation functions) available to all child components
-    <RouterProvider router={router} /> 
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<HomePage />} />
+                <Route path="products" element={<ProductsListPage />} />
+                <Route path="products/:id" element={<ProductPage />} />
+                <Route path="about" element={<AboutPage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+                
+                {/* Protected Routes */}
+                <Route
+                  path="profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/*"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* 404 Page */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+              }}
+            />
+          </div>
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
-export default App
+export default App;
