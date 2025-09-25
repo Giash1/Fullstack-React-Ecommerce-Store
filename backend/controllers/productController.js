@@ -11,7 +11,12 @@ export const getProducts = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Build query
-    let query = { isActive: true };
+    let query = {};
+    
+    // Only filter by isActive if not explicitly requesting all products
+    if (req.query.showAll !== 'true') {
+      query.isActive = true;
+    }
 
     // Search
     if (req.query.search) {

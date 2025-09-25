@@ -8,6 +8,7 @@ import Button from '../components/Button';
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
+  const [showErrors, setShowErrors] = useState({});
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -15,7 +16,14 @@ const LoginPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: 'onSubmit', // Only validate on submit
+    reValidateMode: 'onBlur', // Re-validate on blur after first submit
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  });
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -26,6 +34,10 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
+      setShowErrors({
+        email: true,
+        password: true
+      });
       await login(data);
       toast.success('Login successful!');
       navigate('/');
@@ -66,7 +78,7 @@ const LoginPage = () => {
                   message: 'Please enter a valid email',
                 },
               })}
-              error={errors.email?.message}
+              error={showErrors.email ? errors.email?.message : ''}
               placeholder="Enter your email"
               required
             />
@@ -81,7 +93,7 @@ const LoginPage = () => {
                   message: 'Password must be at least 6 characters',
                 },
               })}
-              error={errors.password?.message}
+              error={showErrors.password ? errors.password?.message : ''}
               placeholder="Enter your password"
               required
             />

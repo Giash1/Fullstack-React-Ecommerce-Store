@@ -1,7 +1,8 @@
-import { useState } from 'react';
+/* eslint-disable react/prop-types */
+import { useState, forwardRef } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-const Input = ({
+const Input = forwardRef(({
   label,
   type = 'text',
   name,
@@ -14,7 +15,7 @@ const Input = ({
   disabled = false,
   className = '',
   ...props
-}) => {
+}, ref) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
@@ -39,6 +40,7 @@ const Input = ({
           onBlur={onBlur}
           placeholder={placeholder}
           disabled={disabled}
+          ref={ref}
           className={`
             w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -69,6 +71,8 @@ const Input = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;

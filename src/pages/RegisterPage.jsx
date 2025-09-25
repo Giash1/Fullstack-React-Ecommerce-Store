@@ -8,6 +8,7 @@ import Button from '../components/Button';
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
+  const [showErrors, setShowErrors] = useState({});
   const { register: registerUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +17,17 @@ const RegisterPage = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: 'onSubmit', // Only validate on submit
+    reValidateMode: 'onBlur', // Re-validate on blur after first submit
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreeTerms: false
+    }
+  });
 
   const watchPassword = watch('password');
 
@@ -26,7 +37,20 @@ const RegisterPage = () => {
     return null;
   }
 
+  const handleFormSubmit = (e) => {
+    return handleSubmit(onSubmit)(e);
+  };
+
   const onSubmit = async (data) => {
+    // Force show all errors
+    setShowErrors({
+      name: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+      agreeTerms: true
+    });
+
     try {
       setLoading(true);
       await registerUser({
@@ -37,6 +61,7 @@ const RegisterPage = () => {
       toast.success('Registration successful!');
       navigate('/');
     } catch (error) {
+      console.error('Registration error:', error);
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
@@ -61,7 +86,7 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-6" onSubmit={handleFormSubmit}>
           <div className="space-y-4">
             <Input
               label="Full Name"
@@ -77,7 +102,7 @@ const RegisterPage = () => {
                   message: 'Name cannot exceed 50 characters',
                 },
               })}
-              error={errors.name?.message}
+              error={showErrors.name ? errors.name?.message : ''}
               placeholder="Enter your full name"
               required
             />
@@ -92,7 +117,7 @@ const RegisterPage = () => {
                   message: 'Please enter a valid email',
                 },
               })}
-              error={errors.email?.message}
+              error={showErrors.email ? errors.email?.message : ''}
               placeholder="Enter your email"
               required
             />
@@ -107,7 +132,7 @@ const RegisterPage = () => {
                   message: 'Password must be at least 6 characters',
                 },
               })}
-              error={errors.password?.message}
+              error={showErrors.password ? errors.password?.message : ''}
               placeholder="Enter your password"
               required
             />
@@ -120,7 +145,7 @@ const RegisterPage = () => {
                 validate: (value) =>
                   value === watchPassword || 'Passwords do not match',
               })}
-              error={errors.confirmPassword?.message}
+              error={showErrors.confirmPassword ? errors.confirmPassword?.message : ''}
               placeholder="Confirm your password"
               required
             />
@@ -147,7 +172,7 @@ const RegisterPage = () => {
               </a>
             </label>
           </div>
-          {errors.agreeTerms && (
+          {showErrors.agreeTerms && errors.agreeTerms && (
             <p className="text-sm text-red-600">{errors.agreeTerms.message}</p>
           )}
 
