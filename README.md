@@ -6,25 +6,25 @@ A modern full-stack web application built with React, Node.js, Express, and Mong
 ## Features
 
 ### Frontend
-- ⚡ **Vite** - Fast build tool and development server
-- ⚛️ **React 18** - Latest React with hooks and concurrent features
-- 🛣️ **React Router** - Client-side routing
-- 📋 **React Hook Form** - Form handling with validation
-- 🔄 **React Query** - Data fetching and state management
-- 🎨 **Tailwind CSS** - Utility-first CSS framework
-- 🔔 **React Hot Toast** - Beautiful notifications
-- 🔐 **JWT Authentication** - Secure user authentication
-- 📱 **Responsive Design** - Mobile-first approach
+- **Vite** - Fast build tool and development server
+- **React 18** - Latest React with hooks and concurrent features
+- **React Router** - Client-side routing
+- **React Hook Form** - Form handling with validation
+- **React Query** - Data fetching and state management
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Hot Toast** - Beautiful notifications
+- **JWT Authentication** - Secure user authentication
+- **Responsive Design** - Mobile-first approach
 
 ### Backend
-- 🚀 **Node.js & Express** - Fast web framework
-- 🍃 **MongoDB & Mongoose** - NoSQL database with ODM
-- 🔒 **JWT Authentication** - JSON Web Token security
-- 🔐 **bcryptjs** - Password hashing
-- 🛡️ **Helmet** - Security headers
-- ⚡ **Rate Limiting** - API protection
-- ✅ **Express Validator** - Input validation
-- 🌍 **CORS** - Cross-origin resource sharing
+- **Node.js & Express** - Fast web framework
+- **MongoDB & Mongoose** - NoSQL database with ODM
+- **JWT Authentication** - JSON Web Token security
+- **bcryptjs** - Password hashing
+- **Helmet** - Security headers
+- **Rate Limiting** - API protection
+- **Express Validator** - Input validation
+- **CORS** - Cross-origin resource sharing
 
 ## Prerequisites
 
