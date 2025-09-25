@@ -5,7 +5,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-8">
             <div className="text-center">
                 <h1 className="text-4xl font-bold text-gray-800 mb-6">
-                    Welcome to React Pro Shop
+                    Welcome to ModernMart
                 </h1>
                 <p className="text-xl text-gray-600 mb-8">
                     Your one-stop destination for quality products

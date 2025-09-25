@@ -1,5 +1,9 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Protect routes - verify JWT token
 export const protect = async (req, res, next) => {
@@ -20,8 +24,8 @@ export const protect = async (req, res, next) => {
     }
 
     try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+      // Verify token - using environment variable for JWT secret
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production-12345');
       
       // Get user from token
       req.user = await User.findById(decoded.id);
