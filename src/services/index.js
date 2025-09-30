@@ -37,6 +37,18 @@ export const authAPI = {
     const response = await api.post('/auth/logout');
     return response.data;
   },
+
+  // Forgot password
+  forgotPassword: async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  // Reset password
+  resetPassword: async (resetToken, password) => {
+    const response = await api.put(`/auth/reset-password/${resetToken}`, { password });
+    return response.data;
+  },
 };
 
 // Products API endpoints

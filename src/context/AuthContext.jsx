@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../services';
 
 // Initial state
@@ -67,8 +67,14 @@ const authReducer = (state, action) => {
 const AuthContext = createContext();
 
 // Auth provider component
+import PropTypes from 'prop-types';
+
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
   // Load user from token
   const loadUser = async () => {
@@ -208,6 +214,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Forgot password function
+  const forgotPassword = async (email) => {
+    try {
+      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+      const response = await authAPI.forgotPassword(email);
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to send reset instructions';
+      dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: errorMessage });
+      throw error;
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (resetToken, password) => {
+    try {
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
+      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
+
+      const response = await authAPI.resetPassword(resetToken, password);
+
+      // Store token and user in localStorage
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: {
+          user: response.user,
+          token: response.token,
+        },
+      });
+
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Password reset failed';
+      dispatch({ type: AUTH_ACTIONS.SET_ERROR, payload: errorMessage });
+      throw error;
+    }
+  };
+
   // Clear error function
   const clearError = () => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
@@ -220,6 +267,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     changePassword,
+    forgotPassword,
+    resetPassword,
     clearError,
   };
 

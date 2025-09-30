@@ -97,8 +97,8 @@ const updateProductsWithLocalImages = async () => {
       console.log(`Updated ${product.name} with local image: ${imageToAdd[0].url}`);
     }
 
-    console.log('\n✅ All products updated with local images!');
-    console.log('\n📁 Next steps:');
+    console.log('\n All products updated with local images!');
+    console.log('\n Next steps:');
     console.log('1. Download your product images');
     console.log('2. Save them in: public/images/products/');
     console.log('3. Use these filenames:');
