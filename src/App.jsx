@@ -12,6 +12,8 @@ import ProductsListPage from './pages/ProductsListPage';
 import ElectronicsPage from './pages/ElectronicsPage';
 import HomeProductsPage from './pages/HomeProductsPage';
 import ProductPage from './pages/ProductPage';
+import PaymentPage from './pages/PaymentPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import AboutPage from './pages/AboutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -46,6 +48,8 @@ function App() {
                   <Route path="electronics" element={<ElectronicsPage />} />
                   <Route path="home" element={<HomeProductsPage />} />
                   <Route path="products/:id" element={<ProductPage />} />
+                  <Route path="payment" element={<PaymentPage />} />
+                  <Route path="payment-success" element={<PaymentSuccessPage />} />
                   <Route path="about" element={<AboutPage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />

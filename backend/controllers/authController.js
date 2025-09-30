@@ -243,6 +243,8 @@ export const logout = async (req, res) => {
   try {
     // In a stateless JWT system, logout is handled on the client side
     // by removing the token from storage
+    // Cart should persist for the user and be available on next login
+    
     res.status(200).json({
       success: true,
       message: 'Logged out successfully'

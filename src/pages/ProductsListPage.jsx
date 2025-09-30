@@ -10,16 +10,31 @@ export default function ProductsListPage() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
+                console.log('=== DEBUGGING PRODUCTS FETCH ===');
                 console.log('Attempting to fetch products from:', 'http://localhost:5000/api/products?showAll=true');
+                console.log('Current timestamp:', new Date().toISOString());
+                
                 const response = await axios.get('http://localhost:5000/api/products?showAll=true');
-                console.log('API Response:', response);
-                setProducts(response.data.data || response.data.products || response.data);
+                console.log('API Response received:', response);
+                console.log('Response status:', response.status);
+                console.log('Response data:', response.data);
+                console.log('Products array:', response.data.data);
+                console.log('Number of products:', response.data.data?.length);
+                
+                const productsData = response.data.data || response.data.products || response.data;
+                console.log('Final products data:', productsData);
+                
+                setProducts(productsData);
                 setLoading(false);
+                console.log('=== PRODUCTS LOADED SUCCESSFULLY ===');
             } catch (err) {
+                console.log('=== ERROR OCCURRED ===');
                 console.error('Detailed error fetching products:', err);
                 console.error('Error message:', err.message);
                 console.error('Error response:', err.response);
                 console.error('Error request:', err.request);
+                console.error('Error config:', err.config);
+                console.log('=== ERROR END ===');
                 setError(`Failed to fetch products: ${err.message}`);
                 setLoading(false);
             }

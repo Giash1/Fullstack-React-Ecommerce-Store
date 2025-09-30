@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const Cart = ({ isOpen, onClose }) => {
@@ -12,6 +12,7 @@ const Cart = ({ isOpen, onClose }) => {
     getTotalPrice, 
     getItemCount 
   } = useCart();
+  const navigate = useNavigate();
 
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -25,13 +26,9 @@ const Cart = ({ isOpen, onClose }) => {
 
   const handleCheckout = () => {
     setIsCheckingOut(true);
-    // Simulate checkout process
-    setTimeout(() => {
-      alert('Thank you for your purchase! This is a demo checkout.');
-      clearCart();
-      setIsCheckingOut(false);
-      onClose();
-    }, 2000);
+    // Navigate to payment page
+    onClose();
+    navigate('/payment');
   };
 
   if (!isOpen) return null;
@@ -109,7 +106,7 @@ const Cart = ({ isOpen, onClose }) => {
                     {/* Quantity Controls */}
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
+                        onClick={() => handleQuantityChange(item.productId || item._id, item.quantity - 1)}
                         className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +115,7 @@ const Cart = ({ isOpen, onClose }) => {
                       </button>
                       <span className="w-8 text-center font-medium">{item.quantity}</span>
                       <button
-                        onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
+                        onClick={() => handleQuantityChange(item.productId || item._id, item.quantity + 1)}
                         disabled={item.quantity >= item.stock}
                         className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                       >
@@ -130,7 +127,7 @@ const Cart = ({ isOpen, onClose }) => {
 
                     {/* Remove Button */}
                     <button
-                      onClick={() => removeFromCart(item._id)}
+                      onClick={() => removeFromCart(item.productId || item._id)}
                       className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,5 +1,7 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
@@ -16,14 +18,16 @@ const CART_ACTIONS = {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case CART_ACTIONS.ADD_ITEM: {
-      const existingItem = state.items.find(item => item._id === action.payload._id);
+      const existingItem = state.items.find(item => 
+        (item.productId || item._id) === (action.payload.productId || action.payload._id)
+      );
       
       if (existingItem) {
         // If item exists, update quantity
         return {
           ...state,
           items: state.items.map(item =>
-            item._id === action.payload._id
+            (item.productId || item._id) === (action.payload.productId || action.payload._id)
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
           )
@@ -40,14 +44,16 @@ const cartReducer = (state, action) => {
     case CART_ACTIONS.REMOVE_ITEM:
       return {
         ...state,
-        items: state.items.filter(item => item._id !== action.payload)
+        items: state.items.filter(item => 
+          (item.productId || item._id) !== action.payload
+        )
       };
     
     case CART_ACTIONS.UPDATE_QUANTITY:
       return {
         ...state,
         items: state.items.map(item =>
-          item._id === action.payload.id
+          (item.productId || item._id) === action.payload.id
             ? { ...item, quantity: action.payload.quantity }
             : item
         ).filter(item => item.quantity > 0) // Remove items with 0 quantity
@@ -77,19 +83,82 @@ const initialState = {
 
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { isAuthenticated, user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        dispatch({ type: CART_ACTIONS.LOAD_CART, payload: parsedCart });
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error);
+    const loadCart = async () => {
+      if (isAuthenticated && user) {
+        // User is logged in, load cart from database
+        try {
+          setIsLoading(true);
+          const token = localStorage.getItem('token');
+          const response = await axios.get('http://localhost:5000/api/cart', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.data.success) {
+            dispatch({ type: CART_ACTIONS.LOAD_CART, payload: response.data.data.items });
+          }
+        } catch (error) {
+          console.error('Error loading cart from database:', error);
+          // Fall back to localStorage
+          const savedCart = localStorage.getItem('cart');
+          if (savedCart) {
+            try {
+              const parsedCart = JSON.parse(savedCart);
+              dispatch({ type: CART_ACTIONS.LOAD_CART, payload: parsedCart });
+            } catch (parseError) {
+              console.error('Error parsing local cart:', parseError);
+            }
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // User not logged in, load from localStorage
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+          try {
+            const parsedCart = JSON.parse(savedCart);
+            dispatch({ type: CART_ACTIONS.LOAD_CART, payload: parsedCart });
+          } catch (error) {
+            console.error('Error loading cart from localStorage:', error);
+          }
+        }
       }
+    };
+
+    loadCart();
+  }, [isAuthenticated, user]);
+
+  // Sync local cart with database when user logs in
+  useEffect(() => {
+    const syncCartOnLogin = async () => {
+      if (isAuthenticated && user && state.items.length > 0) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.post('http://localhost:5000/api/cart/sync', {
+            localCartItems: state.items
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.data.success) {
+            dispatch({ type: CART_ACTIONS.LOAD_CART, payload: response.data.data.items });
+          }
+        } catch (error) {
+          console.error('Error syncing cart:', error);
+        }
+      }
+    };
+
+    // Only sync when user just logged in (avoid infinite loops)
+    if (isAuthenticated && user) {
+      syncCartOnLogin();
     }
-  }, []);
+  }, [isAuthenticated, user, state.items]); // Include state.items in dependencies
 
   // Save cart to localStorage whenever cart changes
   useEffect(() => {
@@ -97,7 +166,39 @@ export const CartProvider = ({ children }) => {
   }, [state.items]);
 
   // Cart actions
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = async (product, quantity = 1) => {
+    if (isAuthenticated && user) {
+      // User is logged in, save to database
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post('http://localhost:5000/api/cart/add', {
+          productId: product._id,
+          quantity: quantity
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.success) {
+          // Refresh cart from database
+          const cartResponse = await axios.get('http://localhost:5000/api/cart', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (cartResponse.data.success) {
+            dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartResponse.data.data.items });
+          }
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        // Fall back to local storage
+        addToLocalCart(product, quantity);
+      }
+    } else {
+      // User not logged in, save to localStorage
+      addToLocalCart(product, quantity);
+    }
+  };
+
+  const addToLocalCart = (product, quantity = 1) => {
     // Handle different image formats - products may have images array or single image
     const productImage = product.images && product.images.length > 0 
       ? product.images[0].url || product.images[0] 
@@ -105,6 +206,7 @@ export const CartProvider = ({ children }) => {
     
     const cartItem = {
       _id: product._id,
+      productId: product._id, // Add productId for consistency with database items
       name: product.name,
       price: product.price,
       image: productImage,
@@ -116,18 +218,74 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: CART_ACTIONS.ADD_ITEM, payload: cartItem });
   };
 
-  const removeFromCart = (productId) => {
-    dispatch({ type: CART_ACTIONS.REMOVE_ITEM, payload: productId });
+  const removeFromCart = async (productId) => {
+    if (isAuthenticated && user) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:5000/api/cart/remove/${productId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Refresh cart from database
+        const cartResponse = await axios.get('http://localhost:5000/api/cart', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (cartResponse.data.success) {
+          dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartResponse.data.data.items });
+        }
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        dispatch({ type: CART_ACTIONS.REMOVE_ITEM, payload: productId });
+      }
+    } else {
+      dispatch({ type: CART_ACTIONS.REMOVE_ITEM, payload: productId });
+    }
   };
 
-  const updateQuantity = (productId, quantity) => {
-    dispatch({ 
-      type: CART_ACTIONS.UPDATE_QUANTITY, 
-      payload: { id: productId, quantity } 
-    });
+  const updateQuantity = async (productId, quantity) => {
+    if (isAuthenticated && user) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put('http://localhost:5000/api/cart/update', {
+          productId,
+          quantity
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Refresh cart from database
+        const cartResponse = await axios.get('http://localhost:5000/api/cart', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (cartResponse.data.success) {
+          dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartResponse.data.data.items });
+        }
+      } catch (error) {
+        console.error('Error updating cart:', error);
+        dispatch({ 
+          type: CART_ACTIONS.UPDATE_QUANTITY, 
+          payload: { id: productId, quantity } 
+        });
+      }
+    } else {
+      dispatch({ 
+        type: CART_ACTIONS.UPDATE_QUANTITY, 
+        payload: { id: productId, quantity } 
+      });
+    }
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    if (isAuthenticated && user) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete('http://localhost:5000/api/cart/clear', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+      }
+    }
     dispatch({ type: CART_ACTIONS.CLEAR_CART });
   };
 
@@ -136,16 +294,20 @@ export const CartProvider = ({ children }) => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const getUniqueItemCount = () => {
+    return state.items.length;
+  };
+
   const getTotalPrice = () => {
     return state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   const isInCart = (productId) => {
-    return state.items.some(item => item._id === productId);
+    return state.items.some(item => (item.productId || item._id) === productId);
   };
 
   const getItemQuantity = (productId) => {
-    const item = state.items.find(item => item._id === productId);
+    const item = state.items.find(item => (item.productId || item._id) === productId);
     return item ? item.quantity : 0;
   };
 
@@ -156,9 +318,11 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     clearCart,
     getItemCount,
+    getUniqueItemCount,
     getTotalPrice,
     isInCart,
-    getItemQuantity
+    getItemQuantity,
+    isLoading
   };
 
   return (

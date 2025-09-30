@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend API Test</title>
+</head>
+<body>
+    <h1>Testing Frontend-Backend Connection</h1>
+    <button onclick="testAPI()">Test Products API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                console.log('Testing frontend to backend connection...');
+                
+                // Test 1: All products
+                const response1 = await fetch('http://localhost:5000/api/products');
+                const data1 = await response1.json();
+                console.log('All products response:', data1);
+                
+                // Test 2: Electronics
+                const response2 = await fetch('http://localhost:5000/api/products?category=electronics');
+                const data2 = await response2.json();
+                console.log('Electronics response:', data2);
+                
+                // Test 3: Home products
+                const response3 = await fetch('http://localhost:5000/api/products?category=home');
+                const data3 = await response3.json();
+                console.log('Home products response:', data3);
+                
+                results.innerHTML = `
+                    <h2>✅ API Tests Successful!</h2>
+                    <p>All Products: ${data1.data?.length || 0} items</p>
+                    <p>Electronics: ${data2.data?.length || 0} items</p>
+                    <p>Home Products: ${data3.data?.length || 0} items</p>
+                    <h3>Sample Products:</h3>
+                    <ul>
+                        ${data1.data?.slice(0, 3).map(p => `<li>${p.name} - $${p.price}</li>`).join('') || '<li>No products</li>'}
+                    </ul>
+                `;
+                
+            } catch (error) {
+                console.error('API Test failed:', error);
+                results.innerHTML = `
+                    <h2>❌ API Test Failed</h2>
+                    <p>Error: ${error.message}</p>
+                    <p>Check console for details</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

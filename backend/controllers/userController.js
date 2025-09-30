@@ -1,5 +1,35 @@
 import User from '../models/User.js';
 
+// @desc    Get all users (Debug version - shows passwords)
+// @route   GET /api/users/debug/all
+// @access  Public (for debugging only - remove in production)
+export const getAllUsersDebug = async (req, res) => {
+  try {
+    const users = await User.find({}).select('+password');
+    
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      message: 'Debug endpoint - remove in production',
+      data: users.map(user => ({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        passwordHash: user.password?.substring(0, 20) + '...',
+        createdAt: user.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Debug get users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error getting users'
+    });
+  }
+};
+
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Admin
@@ -124,7 +154,7 @@ export const updateUser = async (req, res) => {
     }
 
     // Remove sensitive fields from update
-    const { password, resetPasswordToken, resetPasswordExpire, ...updateData } = req.body;
+    const { ...updateData } = req.body;
 
     user = await User.findByIdAndUpdate(
       req.params.id,

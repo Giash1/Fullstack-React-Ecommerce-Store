@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getUsers,
+  getAllUsersDebug,
   getUser,
   updateUser,
   deleteUser,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 // Admin only routes
 router.get('/', protect, authorize('admin'), getUsers);
+router.get('/debug/all', getAllUsersDebug); // Debug route - remove in production
 router.get('/stats', protect, authorize('admin'), getUserStats);
 router.delete('/:id', protect, authorize('admin'), deleteUser);
 router.put('/:id/deactivate', protect, authorize('admin'), deactivateUser);

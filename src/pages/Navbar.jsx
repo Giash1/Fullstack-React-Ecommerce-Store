@@ -7,7 +7,7 @@ import Cart from '../components/Cart';
 
 export default function NavBar() {
     const { isAuthenticated, user, logout } = useAuth();
-    const { getItemCount } = useCart();
+    const { getUniqueItemCount } = useCart();
     const [isCartOpen, setIsCartOpen] = useState(false);
 
     const handleLogout = () => {
@@ -39,9 +39,9 @@ export default function NavBar() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
                                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v5a2 2 0 11-4 0v-5m4-5V5a2 2 0 10-4 0v3" />
                         </svg>
-                        {getItemCount() > 0 && (
+                        {getUniqueItemCount() > 0 && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                {getItemCount()}
+                                {getUniqueItemCount()}
                             </span>
                         )}
                     </button>

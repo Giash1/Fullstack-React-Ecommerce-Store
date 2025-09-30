@@ -70,11 +70,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Load user from localStorage on app start
-  useEffect(() => {
-    loadUser();
-  }, []);
-
   // Load user from token
   const loadUser = async () => {
     try {
@@ -103,6 +98,11 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
     }
   };
+
+  // Load user from localStorage on app start
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   // Login function
   const login = async (credentials) => {
@@ -170,6 +170,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Keep cart in localStorage for when user logs back in
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }
   };

@@ -49,7 +49,7 @@ const changePasswordValidation = [
 // Routes
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
-router.post('/logout', logout);
+router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.put('/me', protect, updateProfile);
 router.put('/change-password', protect, changePasswordValidation, changePassword);
